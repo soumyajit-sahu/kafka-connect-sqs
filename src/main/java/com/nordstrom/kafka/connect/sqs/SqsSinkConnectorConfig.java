@@ -33,6 +33,7 @@ public class SqsSinkConnectorConfig extends SqsConnectorConfig {
   private final List<String> messageAttributesList;
 
   private final SQSSendMode sqsSendMode;
+  private final FormatType formatType;
 
   private static final ConfigDef CONFIG_DEF = new ConfigDef()
       .define(SqsConnectorConfigKeys.SQS_QUEUE_URL.getValue(), Type.STRING, Importance.HIGH, "URL of the SQS queue to be written to.")
@@ -52,6 +53,8 @@ public class SqsSinkConnectorConfig extends SqsConnectorConfig {
           "AWS Credentials Provider Class")
       .define(SqsConnectorConfigKeys.SQS_SEND_MODE.getValue(), Type.STRING, "sync", Importance.LOW,
                   "If sync, then AmazonSQS client is used. If async, then AmazonSQSAsync client is used to gain better throughput, but ordering might be affected")
+      .define(SqsConnectorConfigKeys.FORMAT_TYPE.getValue(), Type.STRING, "string", Importance.LOW,
+                  "If string, then .toString() is used to serialize the message value object for output. If json, then JsonConverter is used instead.")
       .define(SqsConnectorConfigKeys.SQS_MESSAGE_ATTRIBUTES_ENABLED.getValue(), Type.BOOLEAN, false, Importance.LOW,
           "If true, it gets the Kafka Headers and inserts them as SQS MessageAttributes (only string headers are currently supported). Default is false.")
       .define(SqsConnectorConfigKeys.SQS_MESSAGE_ATTRIBUTES_INCLUDE_LIST.getValue(), Type.LIST, "", Importance.LOW,
@@ -67,6 +70,8 @@ public class SqsSinkConnectorConfig extends SqsConnectorConfig {
 
   public enum SQSSendMode {SYNC, ASYNC};
 
+  public enum FormatType {STRING, JSON};
+
   public SqsSinkConnectorConfig(Map<?, ?> originals) {
     super(config(), originals);
 
@@ -77,9 +82,11 @@ public class SqsSinkConnectorConfig extends SqsConnectorConfig {
       messageAttributesList = Collections.emptyList();
     }
     sqsSendMode = SQSSendMode.valueOf(getString(SqsConnectorConfigKeys.SQS_SEND_MODE.getValue()).toUpperCase());
+    formatType = FormatType.valueOf(getString(SqsConnectorConfigKeys.FORMAT_TYPE.getValue()).toUpperCase());
   }
 
   public SQSSendMode getSQSSendMode() { return sqsSendMode; }
+  public FormatType getFormatType() { return formatType; }
 
   public Boolean getMessageAttributesEnabled() {
     return messageAttributesEnabled;

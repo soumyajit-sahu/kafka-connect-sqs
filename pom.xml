@@ -43,6 +43,7 @@
 
     <aws-java-sdk.version>1.12.669</aws-java-sdk.version>
     <kafka.connect-api.version>3.4.1</kafka.connect-api.version>
+    <kafka.connect-json.version>3.4.1</kafka.connect-json.version>
     <slf4j.version>1.7.36</slf4j.version>
   </properties>
 
@@ -52,6 +53,11 @@
         <groupId>org.apache.kafka</groupId>
         <artifactId>connect-api</artifactId>
         <version>${kafka.connect-api.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.kafka</groupId>
+        <artifactId>connect-json</artifactId>
+        <version>${kafka.connect-json.version}</version>
       </dependency>
       <dependency>
         <groupId>junit</groupId>
@@ -73,6 +79,10 @@
     <dependency>
       <groupId>org.apache.kafka</groupId>
       <artifactId>connect-api</artifactId>
+    </dependency>
+    <dependency>
+      <groupId>org.apache.kafka</groupId>
+      <artifactId>connect-json</artifactId>
     </dependency>
     <dependency>
       <groupId>com.amazonaws</groupId>

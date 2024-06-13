@@ -25,6 +25,7 @@ import java.util.concurrent.TimeoutException;
 
 import com.amazonaws.services.sqs.model.MessageAttributeValue;
 import com.amazonaws.services.sqs.model.SendMessageResult;
+import com.nordstrom.kafka.connect.sqs.format.json.JsonFormat;
 import org.apache.kafka.connect.data.Schema;
 import org.apache.kafka.connect.header.Header;
 import org.apache.kafka.connect.header.Headers;
@@ -33,13 +34,12 @@ import org.apache.kafka.connect.sink.SinkTask ;
 import org.slf4j.Logger ;
 import org.slf4j.LoggerFactory ;
 
-import com.nordstrom.kafka.connect.sqs.SqsSinkConnector ;
-
 public class SqsSinkConnectorTask extends SinkTask {
   private final Logger log = LoggerFactory.getLogger( this.getClass() ) ;
 
   private SqsClient client ;
   private SqsSinkConnectorConfig config ;
+  private JsonFormat jsonFormat;
 
   /*
    * (non-Javadoc)
@@ -63,6 +63,7 @@ public class SqsSinkConnectorTask extends SinkTask {
 
     config = new SqsSinkConnectorConfig( props ) ;
     client = new SqsClient(config) ;
+    jsonFormat = new JsonFormat();
 
     log.info( "task.start:OK, sqs.queue.url={}, topics={}", config.getQueueUrl(), config.getTopics() ) ;
   }
@@ -89,7 +90,7 @@ public class SqsSinkConnectorTask extends SinkTask {
           record.kafkaOffset() ) ;
       final String key = Facility.isNotNull( record.key() ) ? record.key().toString() : null ;
       final String gid = Facility.isNotNullNorEmpty( key ) ? key : record.topic() ;
-      final String body = Facility.isNotNull( record.value() ) ? record.value().toString() : "" ;
+      final String body = Facility.isNotNull( record.value() ) ? convertValueToString(record) : "" ;
 
       Map<String, MessageAttributeValue> messageAttributes = null;
 
@@ -143,6 +144,17 @@ public class SqsSinkConnectorTask extends SinkTask {
       } catch (InterruptedException|ExecutionException|TimeoutException e) {
         throw new RuntimeException(e);
       }
+    }
+  }
+
+  private String convertValueToString(SinkRecord record) {
+    switch (config.getFormatType()) {
+      case STRING:
+        return record.value().toString();
+      case JSON:
+        return jsonFormat.format(record);
+      default:
+        throw new RuntimeException("Unsupported format.type config specified");
     }
   }
 
